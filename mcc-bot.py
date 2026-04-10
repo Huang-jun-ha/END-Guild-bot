@@ -1,84 +1,100 @@
-import subprocess
-import sys
 import os
-from threading import Thread
+import sys
+import subprocess
+import threading
+import time
+import re
+from queue import Queue, Empty
 import plugin
+qz="~"
+_process = None
+_running = True
+input_queue = Queue()
+def send_command(command):
+    global _process
+    if _process is None:
+        raise RuntimeError("进程未启动，请先调用 monitor_process_output()")
 
-Flag = True
-
-def read_stream(stream, prefix):
+    # if not command.endswith('\n'):
+    #     command += '\n'
     try:
-        for line in iter(stream.readline, b''):
-            try:
-                line = line.decode('utf-8').rstrip('\n\r')
-            except UnicodeDecodeError:
-                line = line.decode('gbk').rstrip('\n\r')
-            print(f"[{prefix}] {line}\n")
-    finally:
-        stream.close()
+        if(command[0]!='/'):
+            _process.stdin.write(command+"\n")
+        else :
+            _process.stdin.write(command+"\n")
+        time.sleep(1)
+        _process.stdin.flush()
+        return True
+    except Exception as e:
+        print(f"发送命令失败: {e}")
+        return False
 
-def send_input(proc):
-    global Flag
-    while True and Flag:
+def input_reader():
+    while _running:
         try:
-            user_input = input()
-            send_command(proc, user_input)
+            line = input()
+            input_queue.put(line)
         except EOFError:
             break
         except Exception as e:
-            print(f"[发送错误] {e}")
-            break
+            print(f"读取输入失败: {e}")
 
-def send_command(proc, user_input):
-    global Flag
-    if user_input == "Mcc-bot-exit":
-        print("[*] 正在停止程序...")
-        proc.terminate()
-        Flag = False
-        return
-    if user_input == "Test hello":
-        plugin.test1.send_hello()
-        return
-    proc.stdin.write((user_input + '\n').encode('utf-8'))
-    proc.stdin.flush()
+def user_input_loop():
+    global _running
+    while _running:
+        try:
+            user_input = input_queue.get(timeout=1)
+            if user_input.lower() == 'exit':
+                _running = False
+                if _process:
+                    _process.terminate()
+                break
+            send_command(user_input)
+        except Empty:
+            continue
+        except Exception as e:
+            print(f"输入处理错误: {e}")
 
-def monitor_command(command):
-    global Flag
-    proc = subprocess.Popen(
-        command,
+def restart_program():
+    subprocess.run(
+            ["pkill", "-f", "MCC-Windows-x64.exe"],
+            stderr=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+        )
+    os.execv(sys.executable, [sys.executable] + sys.argv)
+
+def monitor_process_output():
+    global _process, _running
+    _process = subprocess.Popen(
+        ["./MCC-Windows-x64.exe"],   # 启动指令
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
-        shell=True,
-        bufsize=0,
-        close_fds=sys.platform != "win32"
+        bufsize=1,
+        universal_newlines=True,
+        shell=False,
+        encoding="utf-8",
+        errors="ignore"
     )
 
-    # 核心修复：用lambda把proc和send_command绑定，插件只需要传指令
-    plugin.test1.set_func(lambda cmd: send_command(proc, cmd))
-
-    Thread(target=read_stream, args=(proc.stdout, "OUT"), daemon=True).start()
-    Thread(target=read_stream, args=(proc.stderr, "ERR"), daemon=True).start()
-
-    send_input(proc)
-    proc.wait()
-
-    print(f"\n=== 程序已退出 ===")
-    print("将重新启动，停止请输入：Mcc-bot-exit")
+    threading.Thread(target=input_reader, daemon=True).start()
+    threading.Thread(target=user_input_loop, daemon=True).start()
+    print("欢迎使用末影bot喵")
+    while _running:
+        output_line = _process.stdout.readline()
+        if output_line == "" and _process.poll() is not None:
+            continue
+        print(output_line, end="")
+        if output_line:
+            continue
+    _running = False
+    return_code = _process.poll()
+    if return_code != 0:
+        print(f"进程异常退出，返回码: {return_code}")
+        error_output = _process.stderr.read()
+        if error_output:
+            print(f"错误信息: {error_output}")
 
 if __name__ == "__main__":
-    MONITOR_CMD = "MCC-Windows-x64.exe"
-    Path_Mcc = "MCC-Windows-x64.exe"
-
-    if not os.path.exists(Path_Mcc):
-        print("该文件不存在，停止运行")
-        exit()
-
-    print("="*50)
-    print("程序启动成功！可直接输入指令发送给程序")
-    print("输入 Mcc-bot-exit 并回车 可停止程序")
-    print("="*50)
-
-    while Flag:
-        print("\n已重新启动程序")
-        monitor_command(MONITOR_CMD)
+    plugin.test1.set_func(send_command)
+    monitor_process_output()

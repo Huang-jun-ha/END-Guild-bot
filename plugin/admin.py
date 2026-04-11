@@ -39,7 +39,7 @@ def get_whitelist():
                 line.strip()
                 Whitelist.add(line)
     else :
-        print("文件不存在，将创建空白缓存")
+        print("文件不存在，将创建空白名单缓存")
         with open(Whitelist_path , "w" , encoding = "utf-8") as f:
             pass
     return

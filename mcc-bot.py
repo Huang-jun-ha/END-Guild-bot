@@ -119,6 +119,69 @@ def monitor_process_output():
                         time.sleep(1)
                         i = i + 1
                     continue
+                if op_level >= 2 and First_msg == "加管" and msg_size > 1:
+                    i=1
+                    while i < msg_size :
+                        if Player_msg[i][0] == '@':
+                            Player_msg[i] = Player_msg[i][1:]
+                        print(f"正在添加玩家为管理员 {Player_msg[i]}")
+                        Flag = plugin.admin.add_player_admin({Player_msg[i]})
+                        if Flag:
+                            send_command(f"已成功添加管理员 {Player_msg[i]}")
+                        else :
+                            send_command(f"玩家 {Player_msg[i]} 已经是管理员")
+                        print(f"玩家 {Player_msg[i]} 加管流程结束")
+                        time.sleep(1)
+                        i = i + 1
+                    continue
+                    
+                if op_level >= 2 and First_msg == "加白" and msg_size > 1:
+                    i=1
+                    while i < msg_size :
+                        if Player_msg[i][0] == '@':
+                            Player_msg[i] = Player_msg[i][1:]
+                        print(f"正在添加玩家到白名单 {Player_msg[i]}")
+                        Flag = plugin.admin.add_player_whitelist({Player_msg[i]})
+                        if Flag:
+                            send_command(f"已成功添加白 {Player_msg[i]}")
+                        else :
+                            send_command(f"玩家 {Player_msg[i]} 已经在白名单内")
+                        print(f"玩家 {Player_msg[i]} 加白流程结束")
+                        time.sleep(1)
+                        i = i + 1
+                    continue
+                
+                if op_level >= 2 and First_msg == "去管" and msg_size > 1:
+                    i=1
+                    while i < msg_size :
+                        if Player_msg[i][0] == '@':
+                            Player_msg[i] = Player_msg[i][1:]
+                        print(f"正在删除玩家为管理员 {Player_msg[i]}")
+                        Flag = plugin.admin.del_player_admin({Player_msg[i]})
+                        if Flag:
+                            send_command(f"已成功删除管理员 {Player_msg[i]}")
+                        else :
+                            send_command(f"玩家 {Player_msg[i]} 不是管理员")
+                        print(f"玩家 {Player_msg[i]} 去管流程结束")
+                        time.sleep(1)
+                        i = i + 1
+                    continue
+                    
+                if op_level >= 2 and First_msg == "去白" and msg_size > 1:
+                    i=1
+                    while i < msg_size :
+                        if Player_msg[i][0] == '@':
+                            Player_msg[i] = Player_msg[i][1:]
+                        print(f"正在删除玩家在白名单 {Player_msg[i]}")
+                        Flag = plugin.admin.del_player_whitelist({Player_msg[i]})
+                        if Flag:
+                            send_command(f"已成功去白 {Player_msg[i]}")
+                        else :
+                            send_command(f"玩家 {Player_msg[i]} 不在白名单内")
+                        print(f"玩家 {Player_msg[i]} 去白流程结束")
+                        time.sleep(1)
+                        i = i + 1
+                    continue
             continue 
     
     _running = False

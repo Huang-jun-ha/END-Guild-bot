@@ -3,8 +3,8 @@ import os
 Adminlist = set()
 Whitelist = set()
 
-Adminlist_path = "/config/admin/adminlist.json"
-Whitelist_path = "/config/admin/whitelist.json"
+Adminlist_path = "./plugin_config/admin/adminlist.txt"
+Whitelist_path = "./plugin_config/admin/whitelist.txt"
 
 def update_adminlist():
     with open(Adminlist_path ,"w" , encoding = "utf-8") as f:
@@ -17,6 +17,7 @@ def update_whitelist():
                 f.write(name + "\n")
 
 def get_adminlist():
+    os.makedirs(os.path.dirname(Adminlist_path), exist_ok=True)
     if os.path.exists(Adminlist_path):
         print("文件存在，即将初始化 管理员名单")
         with open(Adminlist_path , "r" , encoding = "utf-8") as f:
@@ -25,20 +26,21 @@ def get_adminlist():
                 Adminlist.add(line)
     else :
         print("文件不存在，将创建空管理员缓存")
-        with open(Adminlist , "x" , encoding = "utf-8") as f:
+        with open(Adminlist_path , "w" , encoding = "utf-8") as f:
             pass
     return
 
 def get_whitelist():
+    os.makedirs(os.path.dirname(Whitelist_path), exist_ok=True)
     if os.path.exists(Whitelist_path):
-        print("文件存在，即将初始化 管理员名单")
+        print("文件存在，即将初始化 白名单")
         with open(Whitelist_path , "r" , encoding = "utf-8") as f:
             for line in f:
                 line.strip()
                 Whitelist.add(line)
     else :
-        print("文件不存在，将创建空管理员缓存")
-        with open(Whitelist_path , "x" , encoding = "utf-8") as f:
+        print("文件不存在，将创建空白缓存")
+        with open(Whitelist_path , "w" , encoding = "utf-8") as f:
             pass
     return
 

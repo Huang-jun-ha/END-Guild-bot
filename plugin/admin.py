@@ -1,6 +1,5 @@
 # 此插件为 管理员和白名单管理插件，并且返回权限等级
 import os
-Send_commands = None
 Adminlist = set()
 Whitelist = set()
 
@@ -87,8 +86,6 @@ def del_player_whitelist(player):
         Whitelist.remove(player)
         update_whitelist()
 
-def init(func):
-    global Send_commands
-    Send_commands = func
+def init():
     get_adminlist()
     get_whitelist()

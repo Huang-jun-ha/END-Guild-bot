@@ -14,14 +14,9 @@ def send_command(command):
     global _process
     if _process is None:
         raise RuntimeError("进程未启动，请先调用 monitor_process_output()")
-
-    # if not command.endswith('\n'):
-    #     command += '\n'
+    
     try:
-        if(command[0]!='/'):
-            _process.stdin.write(command+"\n")
-        else :
-            _process.stdin.write(command+"\n")
+        _process.stdin.write(command + "\n")
         time.sleep(1)
         _process.stdin.flush()
         return True
@@ -96,5 +91,5 @@ def monitor_process_output():
             print(f"错误信息: {error_output}")
 
 if __name__ == "__main__":
-    plugin.test1.set_func(send_command)
+    plugin.admin.init()
     monitor_process_output()

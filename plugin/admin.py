@@ -22,8 +22,8 @@ def get_adminlist():
         print("文件存在，即将初始化 管理员名单")
         with open(Adminlist_path , "r" , encoding = "utf-8") as f:
             for line in f:
-                line.strip()
-                Adminlist.add(line)
+                new_line = line.strip()
+                Adminlist.add(new_line)
     else :
         print("文件不存在，将创建空管理员缓存")
         with open(Adminlist_path , "w" , encoding = "utf-8") as f:
@@ -36,8 +36,8 @@ def get_whitelist():
         print("文件存在，即将初始化 白名单")
         with open(Whitelist_path , "r" , encoding = "utf-8") as f:
             for line in f:
-                line.strip()
-                Whitelist.add(line)
+                new_line = line.strip()
+                Whitelist.add(new_line)
     else :
         print("文件不存在，将创建空白名单缓存")
         with open(Whitelist_path , "w" , encoding = "utf-8") as f:
@@ -91,3 +91,5 @@ def del_player_whitelist(player):
 def init():
     get_adminlist()
     get_whitelist()
+    for f in Adminlist :
+        print(f)

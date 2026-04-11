@@ -65,7 +65,7 @@ def user_input_loop():
 
 def restart_program():
     subprocess.run(
-            ["pkill", "-f", "MCC-Windows-x64.exe"],
+            ["pkill", "-f", "Linux-mcc"],
             stderr=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
         )
@@ -74,7 +74,7 @@ def restart_program():
 def monitor_process_output():
     global _process, _running
     _process = subprocess.Popen(
-        ["./MCC-Windows-x64.exe"],   # 启动指令
+        ["./Linux-mcc"],   # 启动指令
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         stdin=subprocess.PIPE,
@@ -98,21 +98,27 @@ def monitor_process_output():
             Player_info = match_player_info(output_line)
             if Player_info :
                 Title , Player_name , Player_msg = Player_info
-                msg_size = Player_msg.len()
+                msg_size = len(Player_msg)
 
                 if msg_size < 1 :
                     continue
 
                 First_msg = Player_msg[0]
-                if First_msg != qz:
+                if First_msg[0] != qz:
                     continue
-                First_msg[1:]
+                First_msg = First_msg[1:]
                 op_level = plugin.admin.query_player_level(Player_name)
-                if op_level >=1 and First_msg == "查等级" and msg_size > 1:
+                if op_level >= 1 and First_msg == "查等级" and msg_size > 1:
                     i = 1
                     while i < msg_size :
-                        send_command(f"玩家 {msg_size[i]} 等级为：{plugin.admin.query_player_level(msg_size[i])}")
-                    return
+                        if Player_msg[i][0] == '@':
+                            Player_msg[i] = Player_msg[i][1:]
+                        print(f"正在查询玩家 {Player_msg[i]}")
+                        send_command(f"玩家 {Player_msg[i]} 等级为：{plugin.admin.query_player_level(Player_msg[i])}")
+                        print(f"查询玩家 {Player_msg[i]} 完毕")
+                        time.sleep(1)
+                        i = i + 1
+                    continue
             continue 
     
     _running = False

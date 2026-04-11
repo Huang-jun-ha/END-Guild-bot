@@ -183,6 +183,16 @@ def monitor_process_output():
                         time.sleep(1.2)
                         i = i + 1
                     continue
+            
+                if op_level >= 1 and First_msg == "执行指令" and msg_size > 1 :
+                    S=""
+                    for f in Player_msg :
+                        S = S + f + " "
+                    if Player_msg[1][0] == '/' :
+                        send_command(S)
+                    else :
+                        send_command("/" + S)
+                    continue
             continue 
     
     _running = False

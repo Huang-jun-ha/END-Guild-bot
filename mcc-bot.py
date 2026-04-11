@@ -10,6 +10,19 @@ qz="~"
 _process = None
 _running = True
 input_queue = Queue()
+
+def match_player_info(output):
+    output.strip()
+    player_info_pattern = re.compile(r'▌\s*(?:\[([^\]]+)\])?\s*([a-zA-Z0-9_]+)\s*>>\s*(.+)')
+    player_info_match = re.match(player_info_pattern , output)
+    if not player_info_match :
+        return None
+    Title = player_info_match.group(1)
+    Player_name = player_info_match.group(2)
+    Player_msg = player_info_match.group(3)
+    msg_list = Player_msg.split()
+    return Title , Player_name , msg_list
+
 def send_command(command):
     global _process
     if _process is None:
@@ -80,8 +93,28 @@ def monitor_process_output():
         if output_line == "" and _process.poll() is not None:
             continue
         print(output_line, end="")
-        if output_line:
-            continue
+
+        if output_line: #监听输出，判断指令部分
+            Player_info = match_player_info(output_line)
+            if Player_info :
+                Title , Player_name , Player_msg = Player_info
+                msg_size = Player_msg.len()
+
+                if msg_size < 1 :
+                    continue
+
+                First_msg = Player_msg[0]
+                if First_msg != qz:
+                    continue
+                First_msg[1:]
+                op_level = plugin.admin.query_player_level(Player_name)
+                if op_level >=1 and First_msg == "查等级" and msg_size > 1:
+                    i = 1
+                    while i < msg_size :
+                        send_command(f"玩家 {msg_size[i]} 等级为：{plugin.admin.query_player_level(msg_size[i])}")
+                    return
+            continue 
+    
     _running = False
     return_code = _process.poll()
     if return_code != 0:
